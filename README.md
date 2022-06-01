@@ -1,6 +1,6 @@
 # Home Health Care Routing and Scheduling Problem
 
-This repository bring together implementations of algorithms aimed to solve variants of the Home Health Care Routing and Scheduling Problem (HHCRSP).
+This repository brings together implementations of algorithms aimed to solve variants of the Home Health Care Routing and Scheduling Problem (HHCRSP).
 
 # Current implementations
 
@@ -11,4 +11,5 @@ This repository bring together implementations of algorithms aimed to solve vari
 # Repository contributors
 
 Carlos Lamas Fernandez
+
 Richu Johnson
