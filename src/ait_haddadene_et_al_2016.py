@@ -3,9 +3,10 @@ from collections import defaultdict
 import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
+import pandas as pd
 import xlrd
 import xlsxwriter
-
+from libs.create_graph import *
 from libs.read_helper_functions import read_ait_h_instance
 #18 patient set 
 filenames=['18-4-s-2a']
@@ -17,7 +18,11 @@ filenames=['18-4-s-2a']
 #75 patient set
 #filenames=['73-16-s-2a','73-16-s-3','73-16-s-2b','73-16-m-3a','73-16-m-3b']
 
-workbook = xlsxwriter.Workbook('../output/ait_haddadene_results.xlsx')
+output_data_filename = '../output/ait_haddadene_results.xlsx'
+
+output_graph_filename = '../output/ait_haddadene_results.html'
+
+workbook = xlsxwriter.Workbook(output_data_filename)
 worksheet = workbook.add_worksheet()
 worksheet.write(0, 0, 'Filename' )
 worksheet.write(0, 1, 'Objective value' )
@@ -273,6 +278,20 @@ for fl in range(len(filenames)):
         route=[]
         Pref=0
         
+        # Add some information to this dictionary to create the graph:
+        graph_dic = {'element' : [], 'id_1' : [], 'id_2' : [], 'use' : [], 'value' : []}
+
+        # Put the depots close together and black:
+        add_dic_node(graph_dic, 0, 'x', 1)
+        add_dic_node(graph_dic, 0, 'y', 1)
+        add_dic_node(graph_dic, 0, 'color', '#000000')
+        add_dic_node(graph_dic, 0, 'text','Source depot 0')
+
+        # add_dic_node(graph_dic, 19, 'x', 1)
+        # add_dic_node(graph_dic, 19, 'y', 1)
+        add_dic_node(graph_dic, 19, 'color', '#000000')        
+        add_dic_node(graph_dic, 19, 'text','Destination depot 19')
+
         for k in K:
             frm=[]
             to=[]
@@ -282,6 +301,24 @@ for fl in range(len(filenames)):
             for i in Vnf:
                 for j in Vnd:
                     if x[i,j,k].X>0:
+                        graph_dic['element'].append('edge')
+                        graph_dic['id_1'].append(i)
+                        graph_dic['id_2'].append(j)
+                        graph_dic['use'].append('width')
+                        graph_dic['value'].append(x[i,j,k].X*2)
+
+                        graph_dic['element'].append('edge')
+                        graph_dic['id_1'].append(i)
+                        graph_dic['id_2'].append(j)
+                        graph_dic['use'].append('color_float')
+                        graph_dic['value'].append(k/len(K))
+
+                        graph_dic['element'].append('edge')
+                        graph_dic['id_1'].append(i)
+                        graph_dic['id_2'].append(j)
+                        graph_dic['use'].append('text')
+                        graph_dic['value'].append('x_' + str(i) + '_' + str(j) + '_' + str(k) + ' = ' + str(x[i,j,k].X))
+
                         nurse.append(k)
                         frm.append(i)
                         to.append(j)
@@ -292,7 +329,8 @@ for fl in range(len(filenames)):
             stck=stck[np.argsort(stck[:,3])]
             route.append(stck)
     
-    
+        create_graph(pd.DataFrame(graph_dic), filename=output_graph_filename)
+
         print("****************")
         print("filename = ",file_to_read)
         print("****************")    
@@ -305,7 +343,7 @@ for fl in range(len(filenames)):
         print("Pref=",Pref)
         print("****************")
         
-        print(route)
+        # print(route)
         
         worksheet.write(fl+1, 0, file_to_read )
         worksheet.write(fl+1, 1, m.objVal )
