@@ -20,7 +20,9 @@ def create_graph(df, filename=None,
 					 nodeshape='dot',
 					 edgewidth=10,
 					 no_node_labels=False,
-					 show_buttons=False):
+					 show_buttons=False,
+					 physics=False,
+					 stabilization=False):
 	nodes = {}
 	edges = {}
 	new_nodes = 0
@@ -38,6 +40,10 @@ def create_graph(df, filename=None,
 					   cval, '), clipped')
 				cval = 1
 			row['value'] =  matplotlib.colors.to_hex(cmap(cval))
+		
+		# Make y coordinate go upwards if it appears:
+		if row['use'] == 'y':
+			row['value'] =  -1*float(row['value'])
 
 		if row['element'].lower() == 'node':
 			if not row['id_1'] in nodes.keys():
@@ -94,6 +100,10 @@ def create_graph(df, filename=None,
 		g.add_edge(e[0], e[1], **edges[e])
 
 
+
+	g.toggle_physics(physics)
+	g.toggle_stabilization(stabilization)
+
 	print('Saving graph to', out, '...')
 	if show_buttons:
 		g.show_buttons()
@@ -128,6 +138,8 @@ if __name__ == '__main__':
 	parser.add_argument("--no_node_labels", action='store_true', help="Do not display node labels in the graph")
 	parser.add_argument("--not_directed", action='store_true', help="Do not consider the graph as directed")
 
+	parser.add_argument("--physics", action='store_true', help="Perform physics simulation (default False)")
+	parser.add_argument("--stabilization", action='store_true', help="Perform node stabilization nodes (default False)")
 
 	# Parse arguments, and do not pass those left empty:
 	args = parser.parse_args()
